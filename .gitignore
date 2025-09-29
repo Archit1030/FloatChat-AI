@@ -1,0 +1,53 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environments
+.venv/
+venv/
+ENV/
+env/
+
+# ChromaDB local persistence (adjust path if different)
+chroma_db/
+chroma/
+.chroma/
+data/chroma/
+**/chroma_db/
+**/.chroma/
+# Large and generated artifacts
+*.nc
+data/
+logs/
+*.parquet
+*.duckdb
+__pycache__/
+
+
+# DuckDB/Parquet artifacts often used by Chroma
+*.duckdb
+*.parquet
+chroma.sqlite*
+chroma/*/index/*
+chroma/*/embeddings/*
+
+# Streamlit & build caches
+.streamlit/
+**/.streamlit/
+
+# Logs and outputs
+logs/
+*.log
+
+# OS & editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Environment & secrets
+.env
+*.env
+.env.*
