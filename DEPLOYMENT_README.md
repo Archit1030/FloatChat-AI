@@ -15,11 +15,13 @@ This is a standalone Streamlit application that demonstrates ARGO float data vis
 ### Streamlit Cloud
 
 1. Fork or clone this repository
-2. Go to [share.streamlit.io](https://share.streamlit.io)
-3. Connect your GitHub account
-4. Select this repository
-5. Set the main file path to: `streamlit_app_mock.py`
-6. Click Deploy
+2. Ensure your repository does NOT contain a `packages.txt` file (delete it if present, as it causes deployment errors)
+3. Go to [share.streamlit.io](https://share.streamlit.io)
+4. Connect your GitHub account
+5. Select this repository
+6. Set the main file path to: `streamlit_app_mock.py`
+7. Click Deploy
+8. If deployment fails due to PostgreSQL dependencies, the app will use `frontend_requirements.txt` automatically
 
 ### Local Development
 
