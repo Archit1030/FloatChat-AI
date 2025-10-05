@@ -208,43 +208,62 @@ async def root():
 
 @app.post("/query", response_model=QueryResponse)
 async def query_data(request: QueryRequest):
-    """Process natural language queries about oceanographic data"""
+    """Process natural language queries about oceanographic data using enhanced LLM"""
     
     if not mock_data_initialized:
         initialize_mock_data()
     
-    query = request.query_text.lower()
-    
-    # Simple query processing for demo
-    if "temperature" in query:
-        avg_temp = mock_measurements["temperature"].mean()
-        answer = f"Based on ARGO float data, the average temperature across all measurements is {avg_temp:.2f}°C. Temperature varies from surface waters (~28°C) to deep waters (~4°C)."
-        context = ["Temperature measurements from ARGO floats in the Indian Ocean"]
+    try:
+        # Choose LLM interface based on environment
+        if config.IS_CLOUD:
+            # Use lightweight interface for cloud deployment
+            from lightweight_llm_interface import lightweight_llm as llm_interface
+        else:
+            # Use enhanced interface for local development
+            try:
+                from enhanced_llm_interface import enhanced_llm as llm_interface
+            except ImportError:
+                # Fallback to lightweight if enhanced not available
+                from lightweight_llm_interface import lightweight_llm as llm_interface
         
-    elif "salinity" in query:
-        avg_sal = mock_measurements["salinity"].mean()
-        answer = f"The average salinity across all ARGO measurements is {avg_sal:.2f} PSU. Salinity shows typical oceanic values with slight increases at depth."
-        context = ["Salinity measurements from ARGO floats"]
+        # Initialize LLM if not already done
+        if not llm_interface.initialized:
+            llm_interface.initialize(mock_floats, mock_measurements)
         
-    elif "float" in query:
-        num_floats = len(mock_floats)
-        answer = f"There are {num_floats} active ARGO floats deployed in the Indian Ocean region, collecting oceanographic data continuously."
-        context = ["ARGO float deployment information"]
+        # Process query with LLM
+        result = llm_interface.query_with_context(request.query_text)
         
-    elif "depth" in query:
-        max_depth = mock_measurements["depth"].max()
-        answer = f"ARGO floats collect data down to {max_depth}m depth, providing vertical profiles of ocean properties."
-        context = ["Depth profile information from ARGO floats"]
+        return QueryResponse(
+            answer=result["answer"],
+            context_documents=result["context_documents"],
+            retrieved_metadata=result["retrieved_metadata"]
+        )
         
-    else:
-        answer = "I can help you explore ARGO float oceanographic data. Try asking about temperature, salinity, floats, or depth measurements."
-        context = ["General ARGO float information"]
-    
-    return QueryResponse(
-        answer=answer,
-        context_documents=context,
-        retrieved_metadata=[{"source": "mock_data", "query_type": "semantic"}]
-    )
+    except Exception as e:
+        logger.error(f"Enhanced LLM query failed: {e}")
+        
+        # Fallback to simple response
+        query = request.query_text.lower()
+        
+        if any(word in query for word in ['hello', 'hi', 'hey']):
+            answer = "Hello! I'm your ARGO float data assistant. I can help you explore oceanographic measurements including temperature, salinity, depth profiles, and float locations. What would you like to know about ocean data?"
+        elif "temperature" in query:
+            avg_temp = mock_measurements["temperature"].mean()
+            answer = f"Based on ARGO float data, the average temperature across all measurements is {avg_temp:.2f}°C. Temperature varies from surface waters (~28°C) to deep waters (~4°C)."
+        elif "salinity" in query:
+            avg_sal = mock_measurements["salinity"].mean()
+            answer = f"The average salinity across all ARGO measurements is {avg_sal:.2f} PSU. Salinity shows typical oceanic values with slight increases at depth."
+        elif "float" in query:
+            num_floats = len(mock_floats)
+            answer = f"There are {num_floats} active ARGO floats deployed in the Indian Ocean region, collecting oceanographic data continuously."
+        else:
+            answer = "I'm here to help you explore ARGO float oceanographic data! I can tell you about ocean temperature, salinity, depth measurements, and float locations. What specific aspect would you like to know about?"
+        
+        return QueryResponse(
+            answer=answer,
+            context_documents=["Fallback response"],
+            retrieved_metadata=[{"source": "fallback", "query_type": "simple"}]
+        )
 
 @app.get("/floats")
 async def get_floats():
