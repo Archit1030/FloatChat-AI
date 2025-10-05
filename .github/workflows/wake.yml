@@ -1,0 +1,24 @@
+name: Wake Streamlit App
+
+on:
+  schedule:
+    - cron: '0 */10 * * *' # Runs every 10 hours
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  wake-up:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up app
+        run: |
+          curl -I "https://flowchat-ai.streamlit.app"
+          echo "App pinged successfully at $(date)"
+      
+      - name: Health check
+        run: |
+          response=$(curl -s -o /dev/null -w "%{http_code}" "https://flowchat-ai.streamlit.app")
+          if [ $response -eq 200 ]; then
+            echo "✅ App is healthy (HTTP $response)"
+          else
+            echo "⚠️ App returned HTTP $response"
+          fi
