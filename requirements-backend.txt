@@ -1,0 +1,17 @@
+# Backend requirements for Railway deployment
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+pandas==2.3.2
+sqlalchemy==2.0.23
+psycopg2-binary==2.9.9
+chromadb==0.4.18
+pydantic>=2.5.0
+python-multipart==0.0.6
+sentence-transformers==2.2.2
+huggingface-hub==0.19.4
+numpy==1.24.3
+python-dotenv==1.0.0
+
+# Export utilities
+netcdf4==1.6.5
+xarray==2023.12.0

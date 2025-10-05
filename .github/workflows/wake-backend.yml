@@ -1,0 +1,40 @@
+name: Wake Backend API
+
+on:
+  schedule:
+    - cron: '*/25 * * * *' # Runs every 25 minutes to prevent Railway sleep
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  wake-backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake up backend API
+        run: |
+          # Replace with your actual Railway backend URL
+          BACKEND_URL="https://your-app-name.railway.app"
+          
+          echo "Pinging backend at $BACKEND_URL"
+          response=$(curl -s -o /dev/null -w "%{http_code}" "$BACKEND_URL/health")
+          
+          if [ $response -eq 200 ]; then
+            echo "✅ Backend API is healthy (HTTP $response)"
+          else
+            echo "⚠️ Backend API returned HTTP $response"
+          fi
+          
+          echo "Backend pinged successfully at $(date)"
+      
+      - name: Test API endpoints
+        run: |
+          BACKEND_URL="https://your-app-name.railway.app"
+          
+          # Test root endpoint
+          echo "Testing root endpoint..."
+          curl -s "$BACKEND_URL/" | head -c 200
+          
+          # Test statistics endpoint
+          echo -e "\n\nTesting statistics endpoint..."
+          curl -s "$BACKEND_URL/statistics" | head -c 200
+          
+          echo -e "\n\n✅ API endpoints tested successfully"
