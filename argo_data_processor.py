@@ -105,7 +105,7 @@ class ARGODataProcessor:
         logger.info(f"📊 Analyzing NetCDF file: {self.netcdf_path}")
         
         # Open dataset with minimal memory usage
-        with xr.open_dataset(self.netcdf_path, chunks={'time': 1000}) as ds:
+        with xr.open_dataset(self.netcdf_path) as ds:
             analysis = {
                 'file_size_mb': self.netcdf_path.stat().st_size / (1024 * 1024),
                 'dimensions': dict(ds.dims),
@@ -145,8 +145,8 @@ class ARGODataProcessor:
         
         logger.info(f"🌊 Processing ARGO NetCDF data (max {max_measurements:,} measurements)")
         
-        # Open dataset with chunking
-        with xr.open_dataset(self.netcdf_path, chunks={'time': 1000}) as ds:
+        # Open dataset
+        with xr.open_dataset(self.netcdf_path) as ds:
             
             # Map NetCDF variables to our schema
             var_mapping = self._detect_variable_mapping(ds)

@@ -214,17 +214,11 @@ async def query_data(request: QueryRequest):
         initialize_mock_data()
     
     try:
-        # Choose LLM interface based on environment
-        if config.IS_CLOUD:
-            # Use lightweight interface for cloud deployment
-            from lightweight_llm_interface import lightweight_llm as llm_interface
-        else:
-            # Use enhanced interface for local development
-            try:
-                from enhanced_llm_interface import enhanced_llm as llm_interface
-            except ImportError:
-                # Fallback to lightweight if enhanced not available
-                from lightweight_llm_interface import lightweight_llm as llm_interface
+        # Use lightweight interface for faster testing (no large model download)
+        from lightweight_llm_interface import lightweight_llm as llm_interface
+        
+        # Uncomment below to use the full Qwen model (requires 6GB download):
+        # from enhanced_llm_interface import enhanced_llm as llm_interface
         
         # Initialize LLM if not already done
         if not llm_interface.initialized:

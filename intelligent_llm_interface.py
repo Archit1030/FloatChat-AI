@@ -223,7 +223,7 @@ class IntelligentLLMInterface:
         }
         
         # Extract temporal information
-        years = re.findall(r'\b(19|20)\d{2}\b', query)
+        years = re.findall(r'\b(19\d{2}|20\d{2})\b', query)
         if years:
             intent['temporal']['years'] = [int(year) for year in years]
         
@@ -316,22 +316,29 @@ class IntelligentLLMInterface:
     def _build_chromadb_filter(self, intent: Dict) -> Optional[Dict]:
         """Build ChromaDB filter based on query intent"""
         
-        filters = {}
+        # ChromaDB filters need to be structured properly
+        filters = []
         
         # Add temporal filters
         if intent['temporal'].get('years'):
             if len(intent['temporal']['years']) == 1:
-                filters['year'] = intent['temporal']['years'][0]
+                filters.append({"year": {"$eq": intent['temporal']['years'][0]}})
             else:
-                filters['year'] = {"$in": intent['temporal']['years']}
+                filters.append({"year": {"$in": intent['temporal']['years']}})
         
         if intent['temporal'].get('months'):
             if len(intent['temporal']['months']) == 1:
-                filters['month'] = intent['temporal']['months'][0]
+                filters.append({"month": {"$eq": intent['temporal']['months'][0]}})
             else:
-                filters['month'] = {"$in": intent['temporal']['months']}
+                filters.append({"month": {"$in": intent['temporal']['months']}})
         
-        return filters if filters else None
+        # Combine filters with AND
+        if len(filters) == 1:
+            return filters[0]
+        elif len(filters) > 1:
+            return {"$and": filters}
+        else:
+            return None
     
     def _generate_and_execute_sql(self, query: str, intent: Dict, context_metadata: List[Dict]) -> Optional[Dict]:
         """Generate and execute SQL query based on user intent"""
@@ -404,18 +411,22 @@ class IntelligentLLMInterface:
         
         elif intent['type'] == 'maximum':
             if 'temperature' in intent['measurement_type']:
-                select_clause = "SELECT MAX(m.temperature) as max_temperature, m.time, m.lat, m.lon, m.depth, m.float_id"
+                select_clause = "SELECT m.temperature as max_temperature, m.time, m.lat, m.lon, m.depth, m.float_id"
+                order_by = "ORDER BY m.temperature DESC"
             elif 'salinity' in intent['measurement_type']:
-                select_clause = "SELECT MAX(m.salinity) as max_salinity, m.time, m.lat, m.lon, m.depth, m.float_id"
+                select_clause = "SELECT m.salinity as max_salinity, m.time, m.lat, m.lon, m.depth, m.float_id"
+                order_by = "ORDER BY m.salinity DESC"
             else:
                 select_clause = "SELECT m.temperature, m.salinity, m.time, m.lat, m.lon, m.depth, m.float_id"
                 order_by = "ORDER BY m.temperature DESC"
         
         elif intent['type'] == 'minimum':
             if 'temperature' in intent['measurement_type']:
-                select_clause = "SELECT MIN(m.temperature) as min_temperature, m.time, m.lat, m.lon, m.depth, m.float_id"
+                select_clause = "SELECT m.temperature as min_temperature, m.time, m.lat, m.lon, m.depth, m.float_id"
+                order_by = "ORDER BY m.temperature ASC"
             elif 'salinity' in intent['measurement_type']:
-                select_clause = "SELECT MIN(m.salinity) as min_salinity, m.time, m.lat, m.lon, m.depth, m.float_id"
+                select_clause = "SELECT m.salinity as min_salinity, m.time, m.lat, m.lon, m.depth, m.float_id"
+                order_by = "ORDER BY m.salinity ASC"
             else:
                 select_clause = "SELECT m.temperature, m.salinity, m.time, m.lat, m.lon, m.depth, m.float_id"
                 order_by = "ORDER BY m.temperature ASC"
@@ -491,11 +502,11 @@ class IntelligentLLMInterface:
                 response += ":\n\n"
                 
                 if 'avg_temperature' in row and row['avg_temperature']:
-                    response += f"🌡️ **Average Temperature**: {row['avg_temperature']:.2f}°C\n"
+                    response += f"🌡️ **Average Temperature**: {float(row['avg_temperature']):.2f}°C\n"
                 if 'avg_salinity' in row and row['avg_salinity']:
-                    response += f"🧂 **Average Salinity**: {row['avg_salinity']:.2f} PSU\n"
+                    response += f"🧂 **Average Salinity**: {float(row['avg_salinity']):.2f} PSU\n"
                 if 'measurement_count' in row:
-                    response += f"📊 **Based on**: {row['measurement_count']:,} measurements\n"
+                    response += f"📊 **Based on**: {int(float(row['measurement_count'])):,} measurements\n"
                 
                 response += "\nThis data comes from ARGO floats deployed across the Indian Ocean region, providing accurate oceanographic measurements."
                 return response

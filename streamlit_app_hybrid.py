@@ -31,7 +31,13 @@ st.set_page_config(
 )
 
 # Configuration
-BACKEND_URL = st.secrets.get("BACKEND_URL", "https://your-app-name.railway.app")  # Update this after deployment
+try:
+    BACKEND_URL = st.secrets["BACKEND_URL"]
+except (KeyError, FileNotFoundError, UnicodeDecodeError) as e:
+    # Fallback for local testing or if secrets file has issues
+    BACKEND_URL = "http://localhost:8000"  # Local backend
+    logger.warning(f"Using fallback BACKEND_URL due to: {e}")
+    
 FALLBACK_TO_MOCK = True
 API_TIMEOUT = 10
 

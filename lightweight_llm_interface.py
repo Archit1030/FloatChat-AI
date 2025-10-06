@@ -58,10 +58,22 @@ class LightweightLLMInterface:
             # Use memory client for cloud deployment
             self.chroma_client = chromadb.EphemeralClient()
             
-            # Create collection
+            # Create collection with proper embedding function
+            from chromadb.utils import embedding_functions
+            
+            # Create a custom embedding function
+            class SentenceTransformerEF(embedding_functions.EmbeddingFunction):
+                def __init__(self, model):
+                    self.model = model
+                
+                def __call__(self, input):
+                    return self.model.encode(input).tolist()
+            
+            ef = SentenceTransformerEF(self.embedding_model)
+            
             self.collection = self.chroma_client.get_or_create_collection(
                 name="argo_measurements",
-                embedding_function=self.embedding_model.encode
+                embedding_function=ef
             )
             
             # Add mock data to ChromaDB
