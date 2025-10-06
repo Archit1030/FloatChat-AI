@@ -22,5 +22,5 @@ COPY . .
 # Expose port (Railway will set this)
 EXPOSE 8000
 
-# Start command - use uvicorn directly with environment variable
-CMD ["sh", "-c", "uvicorn main_real_data:app --host 0.0.0.0 --port ${PORT:-8000}"]
+# Start command - use Python startup script
+CMD ["python", "start.py"]
