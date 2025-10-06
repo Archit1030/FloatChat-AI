@@ -262,7 +262,7 @@ Provide a helpful, accurate response based only on the data provided. Be convers
         
         # Greeting responses
         if any(word in query_lower for word in ['hello', 'hi', 'hey', 'good morning', 'good afternoon']):
-            return "Hello! I'm your ARGO float oceanographic data assistant. I can help you explore ocean temperature, salinity, depth measurements, and float locations in the Indian Ocean region. What would you like to know about the ocean data?"
+            return "Hello! I'm your ARGO float oceanographic data assistant. I can help you explore ocean temperature, salinity, depth measurements, and float locations in the Indian Ocean region. My dataset covers **January 10-20, 2010** with 122,027 real measurements. What would you like to know about the ocean data?"
         
         # Temperature queries
         elif 'temperature' in query_lower:
@@ -318,7 +318,7 @@ Provide a helpful, accurate response based only on the data provided. Be convers
         query_lower = query.lower()
         
         if any(word in query_lower for word in ['hello', 'hi', 'hey']):
-            answer = "Hello! I'm your ARGO float data assistant. I can help you explore oceanographic measurements including temperature, salinity, depth profiles, and float locations in the Indian Ocean region. What would you like to know about ocean data?"
+            answer = "Hello! I'm your ARGO float data assistant. I can help you explore oceanographic measurements including temperature, salinity, depth profiles, and float locations in the Indian Ocean region. My dataset covers January 10-20, 2010 with 122,027 real measurements. What would you like to know about ocean data?"
         elif 'temperature' in query_lower:
             answer = "I can help you with ocean temperature data from ARGO floats. These instruments measure temperature profiles from surface to deep waters in the Indian Ocean. Would you like to know about temperature at specific depths or locations?"
         elif 'salinity' in query_lower:

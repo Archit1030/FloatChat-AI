@@ -195,6 +195,7 @@ def render_fallback_layout():
     """, unsafe_allow_html=True)
     st.title("🌊 ARGO Float Data Dashboard")
     st.markdown("**Government Oceanographic Data Visualization System**")
+    st.info("📅 **Real ARGO Float Data**: January 10-20, 2010 | 🌊 Indian Ocean Region | 📊 122,027 Measurements")
     
     # Simple sidebar
     with st.sidebar:

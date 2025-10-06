@@ -150,8 +150,8 @@ async def query_data(request: QueryRequest):
         )
     
     try:
-        # Use intelligent LLM interface with RAG pipeline and SQL generation
-        from intelligent_llm_interface import intelligent_llm as llm_interface
+        # Use simple intelligent interface for reliable API integration
+        from simple_intelligent_interface import simple_intelligent as llm_interface
         
         # Initialize LLM if not already done
         if not llm_interface.initialized:
@@ -242,11 +242,11 @@ async def get_statistics():
     
     try:
         with engine.connect() as conn:
-            # Get comprehensive statistics
+            # Get comprehensive statistics - count all measurements, not just those with valid foreign keys
             stats_query = """
             SELECT 
-                COUNT(DISTINCT f.float_id) as active_floats,
-                COUNT(DISTINCT p.profile_id) as total_profiles,
+                COUNT(DISTINCT m.float_id) as active_floats,
+                (SELECT COUNT(*) FROM profiles) as total_profiles,
                 COUNT(m.id) as total_measurements,
                 AVG(m.temperature) as avg_temperature,
                 AVG(m.salinity) as avg_salinity,
@@ -254,9 +254,7 @@ async def get_statistics():
                 MAX(m.depth) as max_depth,
                 MIN(m.time) as earliest_measurement,
                 MAX(m.time) as latest_measurement
-            FROM measurements m
-            JOIN floats f ON m.float_id = f.float_id
-            JOIN profiles p ON m.profile_id = p.profile_id;
+            FROM measurements m;
             """
             
             result = conn.execute(text(stats_query))
