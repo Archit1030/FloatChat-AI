@@ -1,1 +1,1 @@
-web: python start.py
+web: python -m uvicorn main_real_data:app --host 0.0.0.0 --port $PORT
