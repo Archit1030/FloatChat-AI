@@ -80,7 +80,9 @@ def create_railway_tables(railway_engine):
             deployment_date DATE,
             deployment_lat FLOAT,
             deployment_lon FLOAT,
-            status VARCHAR(20) DEFAULT 'ACTIVE'
+            status VARCHAR(20) DEFAULT 'ACTIVE',
+            last_contact DATE,
+            created_at TIMESTAMP
         )""",
         
         """CREATE TABLE IF NOT EXISTS profiles (
@@ -125,11 +127,40 @@ def create_railway_tables(railway_engine):
         logger.error(f"❌ Error creating Railway tables: {e}")
         return False
 
+def get_table_columns(engine, table_name):
+    """Get column names for a table"""
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(text(f"""
+                SELECT column_name FROM information_schema.columns 
+                WHERE table_name = '{table_name}' AND table_schema = 'public'
+                ORDER BY ordinal_position
+            """))
+            return [row[0] for row in result.fetchall()]
+    except Exception as e:
+        logger.warning(f"Could not get columns for {table_name}: {e}")
+        return []
+
 def migrate_table_data(local_engine, railway_engine, table_name, chunk_size=1000):
     """Migrate data from local to Railway for a specific table"""
     
     try:
         logger.info(f"🔄 Migrating {table_name}...")
+        
+        # Get column schemas for both databases
+        local_columns = get_table_columns(local_engine, table_name)
+        railway_columns = get_table_columns(railway_engine, table_name)
+        
+        logger.info(f"📋 Local columns: {local_columns}")
+        logger.info(f"📋 Railway columns: {railway_columns}")
+        
+        # Find common columns
+        common_columns = [col for col in local_columns if col in railway_columns]
+        logger.info(f"🔗 Common columns: {common_columns}")
+        
+        if not common_columns:
+            logger.error(f"❌ No common columns found between local and Railway {table_name}")
+            return False
         
         # Get total count
         with local_engine.connect() as conn:
@@ -146,8 +177,9 @@ def migrate_table_data(local_engine, railway_engine, table_name, chunk_size=1000
         migrated_rows = 0
         
         for chunk_start in range(0, total_rows, chunk_size):
-            # Read chunk from local
-            chunk_query = f"SELECT * FROM {table_name} LIMIT {chunk_size} OFFSET {chunk_start}"
+            # Read chunk from local with only common columns
+            columns_str = ", ".join(common_columns)
+            chunk_query = f"SELECT {columns_str} FROM {table_name} LIMIT {chunk_size} OFFSET {chunk_start}"
             chunk_df = pd.read_sql_query(chunk_query, local_engine)
             
             if chunk_df.empty:
