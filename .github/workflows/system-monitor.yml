@@ -1,0 +1,75 @@
+name: System Health Monitor
+
+on:
+  schedule:
+    - cron: '0 */6 * * *' # Runs every 6 hours for comprehensive health check
+  workflow_dispatch: # Allows manual triggering
+
+jobs:
+  health-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Railway Backend Health
+        run: |
+          echo "🔍 Checking Railway Backend Health..."
+          BACKEND_URL="https://web-production-bbaf.up.railway.app"
+          
+          # Health endpoint
+          health_response=$(curl -s -w "%{http_code}" "$BACKEND_URL/health")
+          health_code=$(echo "$health_response" | tail -c 4)
+          
+          if [ "$health_code" = "200" ]; then
+            echo "✅ Backend health check passed"
+            echo "$health_response" | head -c 200
+          else
+            echo "❌ Backend health check failed (HTTP $health_code)"
+            exit 1
+          fi
+          
+          # Statistics endpoint
+          echo -e "\n\n📊 Checking statistics endpoint..."
+          stats_response=$(curl -s -w "%{http_code}" "$BACKEND_URL/statistics")
+          stats_code=$(echo "$stats_response" | tail -c 4)
+          
+          if [ "$stats_code" = "200" ]; then
+            echo "✅ Statistics endpoint working"
+            echo "$stats_response" | head -c 300
+          else
+            echo "❌ Statistics endpoint failed (HTTP $stats_code)"
+          fi
+
+      - name: Check Streamlit Frontend Health
+        run: |
+          echo -e "\n\n🌐 Checking Streamlit Frontend Health..."
+          FRONTEND_URL="https://flowchat-ai.streamlit.app"
+          
+          frontend_response=$(curl -s -o /dev/null -w "%{http_code}" "$FRONTEND_URL")
+          
+          if [ "$frontend_response" = "200" ]; then
+            echo "✅ Frontend is accessible (HTTP $frontend_response)"
+          else
+            echo "❌ Frontend check failed (HTTP $frontend_response)"
+          fi
+
+      - name: Test End-to-End Connectivity
+        run: |
+          echo -e "\n\n🔗 Testing End-to-End Connectivity..."
+          BACKEND_URL="https://web-production-bbaf.up.railway.app"
+          
+          # Test a simple query endpoint
+          query_data='{"query_text": "What is the average temperature?"}'
+          query_response=$(curl -s -X POST \
+            -H "Content-Type: application/json" \
+            -d "$query_data" \
+            -w "%{http_code}" \
+            "$BACKEND_URL/query")
+          
+          query_code=$(echo "$query_response" | tail -c 4)
+          
+          if [ "$query_code" = "200" ]; then
+            echo "✅ Query endpoint working - system fully operational"
+          else
+            echo "⚠️ Query endpoint returned HTTP $query_code"
+          fi
+          
+          echo -e "\n🎉 System health check completed at $(date)"
