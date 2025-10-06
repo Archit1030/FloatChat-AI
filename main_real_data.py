@@ -13,6 +13,10 @@ import os
 from typing import Dict, List, Optional, Any
 from sqlalchemy import create_engine, text
 
+# Configure logging first
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 # Import cloud-optimized config
 try:
     import config_cloud as config
@@ -32,9 +36,7 @@ except ImportError:
             IS_CLOUD = True
         config = MinimalConfig()
 
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+
 
 # Initialize FastAPI with cloud-friendly settings
 app = FastAPI(
