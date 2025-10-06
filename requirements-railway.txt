@@ -1,0 +1,11 @@
+# Minimal Railway Backend Requirements
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+pandas
+numpy
+pydantic
+python-dotenv
+requests
+sentence-transformers
