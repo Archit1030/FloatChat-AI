@@ -9,17 +9,22 @@ RUN apt-get update && apt-get install -y \
     gcc \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy backend requirements
-COPY requirements_backend.txt .
+# Copy backend requirements first (for better caching)
+COPY requirements-production.txt ./
 
 # Install Python dependencies
-RUN pip install --no-cache-dir -r requirements_backend.txt
+RUN pip install --no-cache-dir --upgrade pip && \
+    pip install --no-cache-dir -r requirements-production.txt
 
 # Copy application code
 COPY . .
+
+# Create a startup script to ensure proper initialization
+RUN echo '#!/bin/bash\necho "🚀 Starting ARGO Float API..."\nuvicorn main_real_data:app --host 0.0.0.0 --port $PORT' > start.sh && \
+    chmod +x start.sh
 
 # Expose port
 EXPOSE $PORT
 
 # Start command
-CMD uvicorn main_real_data:app --host 0.0.0.0 --port $PORT
+CMD ["./start.sh"]
