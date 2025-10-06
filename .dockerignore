@@ -1,0 +1,46 @@
+# Ignore unnecessary files for Railway deployment
+.git
+.gitignore
+README.md
+*.md
+.env
+.vscode
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env
+venv
+.venv
+pip-log.txt
+pip-delete-this-directory.txt
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.log
+.DS_Store
+.mypy_cache
+.pytest_cache
+.hypothesis
+
+# Streamlit specific files (not needed for backend)
+.streamlit/
+streamlit_app*.py
+components/
+styles/
+utils/
+
+# Local data files
+*.db
+*.nc
+chroma_db/
+tempsal.nc
+
+# Test files
+test_*.py
+tests/

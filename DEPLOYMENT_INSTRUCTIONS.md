@@ -6,14 +6,15 @@
 ```bash
 # Add the fixed files
 git add .
-git commit -m "Fix Railway deployment with correct requirements"
+git commit -m "Fix Railway deployment with Docker and separate requirements"
 git push origin main
 ```
 
 **Fixed Issues:**
-- ✅ Created `nixpacks.toml` to specify backend requirements
-- ✅ Created `requirements-railway.txt` with minimal dependencies
-- ✅ Removed version hash conflicts
+- ✅ Created `Dockerfile` for Railway backend deployment
+- ✅ Kept `requirements.txt` for Streamlit frontend (unchanged)
+- ✅ Using `requirements_backend.txt` for Railway backend
+- ✅ Added `.dockerignore` for optimized builds
 
 ### 1.2 Deploy on Railway
 1. Go to [Railway.app](https://railway.app)
