@@ -19,8 +19,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY . .
 
-# Expose port
-EXPOSE $PORT
+# Expose port (Railway will set this)
+EXPOSE 8000
 
-# Start command - use uvicorn directly
-CMD ["sh", "-c", "echo '🚀 Starting ARGO Float API...' && uvicorn main_real_data:app --host 0.0.0.0 --port $PORT"]
+# Start command - use Python startup script
+CMD ["python", "start.py"]
