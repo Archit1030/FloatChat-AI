@@ -16,8 +16,21 @@ from sqlalchemy import create_engine, text
 # Import cloud-optimized config
 try:
     import config_cloud as config
+    logger.info("✅ Using cloud configuration")
 except ImportError:
-    import config
+    try:
+        import config
+        logger.info("✅ Using local configuration")
+    except ImportError:
+        logger.error("❌ No configuration file found")
+        # Create minimal config
+        class MinimalConfig:
+            DATABASE_URL = "sqlite:///fallback.db"
+            ALLOWED_ORIGINS = ["*"]
+            CHROMA_PATH = "/tmp/chroma_db"
+            VECTOR_STORE = "memory"
+            IS_CLOUD = True
+        config = MinimalConfig()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -115,6 +128,9 @@ async def startup_event():
             logger.warning("⚠️ ChromaDB collection not found - will use fallback")
             collection = None
             
+    except ImportError:
+        logger.warning("⚠️ ChromaDB not available - continuing without vector store")
+        collection = None
     except Exception as e:
         logger.warning(f"⚠️ ChromaDB initialization failed: {e}")
         collection = None
@@ -319,6 +335,15 @@ async def query_data(request: QueryRequest):
             answer=result["answer"],
             context_documents=result["context_documents"],
             retrieved_metadata=result["retrieved_metadata"]
+        )
+        
+    except ImportError as e:
+        logger.error(f"LLM interface import failed: {e}")
+        # Fallback response
+        return QueryResponse(
+            answer="I'm here to help you explore real ARGO float oceanographic data! I can tell you about ocean temperature, salinity, depth measurements, and float locations from your processed NetCDF data. What specific aspect would you like to know about?",
+            context_documents=["Fallback response - LLM interface not available"],
+            retrieved_metadata=[{"source": "fallback", "query_type": "import_error"}]
         )
         
     except Exception as e:

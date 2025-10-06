@@ -19,12 +19,8 @@ RUN pip install --no-cache-dir --upgrade pip && \
 # Copy application code
 COPY . .
 
-# Create a startup script to ensure proper initialization
-RUN echo '#!/bin/bash\necho "🚀 Starting ARGO Float API..."\nuvicorn main_real_data:app --host 0.0.0.0 --port $PORT' > start.sh && \
-    chmod +x start.sh
-
 # Expose port
 EXPOSE $PORT
 
-# Start command
-CMD ["./start.sh"]
+# Start command - use uvicorn directly
+CMD ["sh", "-c", "echo '🚀 Starting ARGO Float API...' && uvicorn main_real_data:app --host 0.0.0.0 --port $PORT"]

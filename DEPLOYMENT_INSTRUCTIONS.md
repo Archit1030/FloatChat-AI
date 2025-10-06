@@ -105,6 +105,8 @@ curl https://your-railway-backend.railway.app/statistics
 - **Database Connection**: Check Railway PostgreSQL is running
 - **Environment Variables**: Verify all variables are set
 - **Logs**: Check Railway deployment logs for errors
+- **Healthcheck Failure**: If healthcheck fails, check that all dependencies are installed
+- **Import Errors**: App now has robust fallbacks for missing dependencies
 
 ### Frontend Issues
 - **Backend URL**: Ensure correct Railway URL in Streamlit secrets
@@ -115,6 +117,13 @@ curl https://your-railway-backend.railway.app/statistics
 - **Network**: Test backend URL directly in browser
 - **Timeout**: Increase timeout in frontend if needed
 - **SSL**: Ensure Railway URL uses HTTPS
+
+### Quick Fix for Deployment Issues
+If you encounter deployment problems, run:
+```bash
+python deploy_fix.py
+```
+This will commit and push all necessary fixes.
 
 ## 📊 Final Verification
 

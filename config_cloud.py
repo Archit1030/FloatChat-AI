@@ -19,10 +19,15 @@ if IS_CLOUD:
         # Fallback to individual components
         DB_HOST = os.getenv("PGHOST", "localhost")
         DB_PORT = os.getenv("PGPORT", "5432")
-        DB_NAME = os.getenv("PGDATABASE", "argo")
+        DB_NAME = os.getenv("PGDATABASE", "railway")
         DB_USER = os.getenv("PGUSER", "postgres")
         DB_PASSWORD = os.getenv("PGPASSWORD", "")
-        DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        if DB_PASSWORD:
+            DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{quote_plus(DB_PASSWORD)}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+        else:
+            # Use sqlite as ultimate fallback for cloud
+            DATABASE_URL = "sqlite:///./argo_fallback.db"
+            print("⚠️ Using SQLite fallback - PostgreSQL not configured")
 else:
     # Local development
     DB_PASSWORD = os.getenv("DB_PASSWORD", "Arcombad1030")

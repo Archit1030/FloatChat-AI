@@ -8,3 +8,4 @@ numpy==1.26.4
 pydantic==2.5.0
 python-dotenv==1.0.0
 requests==2.32.5
+chromadb==0.4.15
