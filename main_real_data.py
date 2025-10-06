@@ -155,51 +155,52 @@ def initialize_database():
     
     logger.info("🏗️ Initializing database tables...")
     
-    # Create tables
-    create_tables_sql = """
-    CREATE TABLE IF NOT EXISTS floats (
-        float_id VARCHAR(50) PRIMARY KEY,
-        wmo_id INTEGER,
-        deployment_date DATE,
-        deployment_lat FLOAT,
-        deployment_lon FLOAT,
-        status VARCHAR(20) DEFAULT 'ACTIVE'
-    );
-    
-    CREATE TABLE IF NOT EXISTS profiles (
-        profile_id SERIAL PRIMARY KEY,
-        float_id VARCHAR(50),
-        cycle_number INTEGER,
-        profile_date DATE,
-        profile_lat FLOAT,
-        profile_lon FLOAT,
-        n_levels INTEGER
-    );
-    
-    CREATE TABLE IF NOT EXISTS measurements (
-        id SERIAL PRIMARY KEY,
-        profile_id INTEGER,
-        float_id VARCHAR(50),
-        time TIMESTAMP,
-        lat FLOAT,
-        lon FLOAT,
-        depth FLOAT,
-        pressure FLOAT,
-        temperature FLOAT,
-        salinity FLOAT,
-        oxygen FLOAT,
-        ph FLOAT,
-        chlorophyll FLOAT,
-        quality_flag INTEGER DEFAULT 1
-    );
-    
-    CREATE INDEX IF NOT EXISTS idx_measurements_time ON measurements(time);
-    CREATE INDEX IF NOT EXISTS idx_measurements_float_id ON measurements(float_id);
-    """
+    # Create tables (split into separate statements for SQLite compatibility)
+    create_tables_sql = [
+        """CREATE TABLE IF NOT EXISTS floats (
+            float_id VARCHAR(50) PRIMARY KEY,
+            wmo_id INTEGER,
+            deployment_date DATE,
+            deployment_lat FLOAT,
+            deployment_lon FLOAT,
+            status VARCHAR(20) DEFAULT 'ACTIVE'
+        )""",
+        
+        """CREATE TABLE IF NOT EXISTS profiles (
+            profile_id INTEGER PRIMARY KEY,
+            float_id VARCHAR(50),
+            cycle_number INTEGER,
+            profile_date DATE,
+            profile_lat FLOAT,
+            profile_lon FLOAT,
+            n_levels INTEGER
+        )""",
+        
+        """CREATE TABLE IF NOT EXISTS measurements (
+            id INTEGER PRIMARY KEY,
+            profile_id INTEGER,
+            float_id VARCHAR(50),
+            time TIMESTAMP,
+            lat FLOAT,
+            lon FLOAT,
+            depth FLOAT,
+            pressure FLOAT,
+            temperature FLOAT,
+            salinity FLOAT,
+            oxygen FLOAT,
+            ph FLOAT,
+            chlorophyll FLOAT,
+            quality_flag INTEGER DEFAULT 1
+        )""",
+        
+        "CREATE INDEX IF NOT EXISTS idx_measurements_time ON measurements(time)",
+        "CREATE INDEX IF NOT EXISTS idx_measurements_float_id ON measurements(float_id)"
+    ]
     
     try:
         with engine.connect() as conn:
-            conn.execute(text(create_tables_sql))
+            for sql_statement in create_tables_sql:
+                conn.execute(text(sql_statement))
             conn.commit()
             logger.info("✅ Database tables created")
             
